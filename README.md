@@ -25,4 +25,28 @@ I have made the online shopping as general as possible:
         }
 
 # ipvalidation
+
+I have successfully added ip validation exercise as well. 
+
+Logic:
+  1. Validating IP address && CIDR range
+  2. Convert IP and CIDR ip to bit format
+  3. find mask
+  4. calculate highest and lowest range
+  5. Find the IP between the range and return boolean.
+
+Testing has been done using main function:
+This testing can be easily extended using Junit / or we can also extend this main function to run many test cases. Locally I have tested it using Junit but didn't wanted to overwhelm with too much redundant assert code so simply added a main function with three test case. 
+
+    public static void main(String args[]){
+    	String ipaddress = "192.168.0.1";
+    	String Cidr = "192.168.0.0/24";
+    	System.out.println(validateIpAddress(ipaddress, Cidr));
+    	ipaddress = "192,168.0.1";
+    	Cidr = "192.168.0.0/24";
+    	System.out.println(validateIpAddress(ipaddress, Cidr));
+    	ipaddress = "192.168.0.1";
+    	Cidr = "192.168.0.0/35";
+    	System.out.println(validateIpAddress(ipaddress, Cidr));
+    }
         
