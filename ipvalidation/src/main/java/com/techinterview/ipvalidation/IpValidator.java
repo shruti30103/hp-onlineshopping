@@ -38,6 +38,135 @@ public class IpValidator {
      * @return true if provided IP address is covered by the CIDR range; false otherwise.
      */
     public static boolean validateIpAddress(String ipAddress, String cidrRange) {
-        return false;
+        boolean result = true;
+    	// Validate ip and cidr range
+    	try{
+    		result = result && validIP(ipAddress);
+    		result = result && validCidrRange(ipAddress);
+    	}
+    	catch (IllegalArgumentException iae) {
+    		throw new IllegalArgumentException();
+    	}
+    	
+    	// Converting ip address to bits format.
+    	String[] ipParts = ipAddress.split("\\.");
+    	int a = Integer.parseInt(ipParts[0]);
+    	int b = Integer.parseInt(ipParts[1]);
+    	int c = Integer.parseInt(ipParts[2]);
+    	int d = Integer.parseInt(ipParts[3]);
+    	
+    	int ipaddr = (( a << 24 ) & 0xFF000000) 
+    	           | (( b << 16 ) & 0xFF0000) 
+    	           | (( c << 8 ) & 0xFF00) 
+    	           |  ( d & 0xFF);
+    	
+    	int cidrIp = 0;
+    	int mask = 32;
+    	// Converting cidr address to bits format.
+    	if(!cidrRange.contains("\\")){
+    		String[] cidrParts = ipAddress.split("\\.");
+    		int p = Integer.parseInt(cidrParts[0]);
+        	int q = Integer.parseInt(cidrParts[1]);
+        	int r = Integer.parseInt(cidrParts[2]);
+        	int s = Integer.parseInt(cidrParts[3]);
+        	
+        	cidrIp = (( p << 24 ) & 0xFF000000) 
+     	           | (( q << 16 ) & 0xFF0000) 
+     	           | (( r << 8 ) & 0xFF00) 
+     	           |  ( s & 0xFF);
+    	}
+    	else{
+    		String[] parts = cidrRange.split("\\");
+       		String[] cidrParts = parts[0].split(".");
+    		int p = Integer.parseInt(cidrParts[0]);
+        	int q = Integer.parseInt(cidrParts[1]);
+        	int r = Integer.parseInt(cidrParts[2]);
+        	int s = Integer.parseInt(cidrParts[3]);
+        	
+        	cidrIp = (( p << 24 ) & 0xFF000000) 
+     	           | (( q << 16 ) & 0xFF0000) 
+     	           | (( r << 8 ) & 0xFF00) 
+     	           |  ( s & 0xFF);
+        	
+        	mask = Integer.parseInt(parts[1]);
+    	}
+        
+    	// Find mask
+    	mask = (-1) << (32 - mask);
+    	// find lowest ip address
+    	int lowest = cidrIp & mask;
+    	// find highest ip address
+    	int highest = lowest + (~mask);
+    	// Check range
+    	result = result && lowest <= ipaddr && ipaddr <= highest;
+        return result;
     }
+    
+    public static boolean validCidrRange (String cidrRange) throws IllegalArgumentException {
+    	boolean result = true;
+    	if(!cidrRange.contains("\\")){
+    		try{
+    			result = result && validIP(cidrRange);
+    		}
+    		catch (IllegalArgumentException iae) {
+    			throw new IllegalArgumentException();
+    		}
+    	}
+    	else{
+			String[] parts = cidrRange.split("\\");
+			try{
+    			result = result && validIP(parts[0]);
+    		}
+    		catch (IllegalArgumentException iae) {
+    			throw new IllegalArgumentException();
+    		}
+			if (parts[1] != "8" || parts[1] != "16" || parts[1] != "24" || parts[1] != "32"){
+				throw new IllegalArgumentException();
+			}
+    	}
+
+    	return result;
+    }
+    
+    public static boolean validIP (String ip) throws IllegalArgumentException {
+        try {
+            if ( ip == null || ip.isEmpty() ) {
+            	throw new IllegalArgumentException();
+            }
+
+            String[] parts = ip.split( "\\." );
+            if ( parts.length != 4 ) {
+            	throw new IllegalArgumentException();
+            }
+
+            for ( String s : parts ) {
+                int i = Integer.parseInt( s );
+                if ( (i < 0) || (i > 255) ) {
+                	throw new IllegalArgumentException();
+                }
+            }
+            if ( ip.endsWith(".") ) {
+            	throw new IllegalArgumentException();
+            }
+
+            return true;
+        } catch (NumberFormatException nfe) {
+        	throw new IllegalArgumentException();
+        }
+    }
+    
+    public static void main(String args[]){
+    	String ipaddress = "192.168.0.1";
+    	String Cidr = "192.168.0.0/24";
+    	System.out.println(validateIpAddress(ipaddress, Cidr));
+    	ipaddress = "192,168.0.1";
+    	Cidr = "192.168.0.0/24";
+    	System.out.println(validateIpAddress(ipaddress, Cidr));
+    	ipaddress = "192.168.0.1";
+    	Cidr = "192.168.0.0/35";
+    	System.out.println(validateIpAddress(ipaddress, Cidr));
+    }
+    
+    
 }
+
